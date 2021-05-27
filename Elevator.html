@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script>
+        $(document).ready(function(){
+            $("#lift1, #lift2, #lift3").slider({
+                orientation: "vertical",
+                range: "max",
+                min: 0,
+                max: 20,
+                value: 1,
+                create: function() {
+                    $("#" + $(this)[0].id.toString() + "Container").text($(this).slider("value"));
+                },
+                slide: function( event, ui ) {
+                    $("#" + $(this)[0].id + "Number").val( ui.value );
+                    $("#" + $(this)[0].id + "Container").text( ui.value );
+                }
+            });
+            $("#lift1Number").val($("#lift1").slider("value"));
+            $("#lift2Number").val($("#lift2").slider("value"));
+            $("#lift3Number").val($("#lift3").slider("value"));
+
+            
+            for(i = 20; i >= 1; i--){
+                var markup = "<tr class='border-bottom'>";
+                for(k = 1; k < 7; k++ )
+                {
+                    markup += "<td><input type='radio' id='chkPerson_"+ k.toString() +"_"+ i.toString() +"' name='person" + k.toString() + "'/></td>";
+                }
+                markup += "<td>"+ i.toString() +"</td></tr>";
+                $("#tblPerson tbody").append(markup);
+            }
+            for(i = 20; i >= 1; i--){
+                var markup = "<tr><td>"+i.toString()+"</td></tr>";
+                $("#tblFloor tbody").append(markup);
+            }
+            $("input[name^='person']").change(function(){
+                const flooor = $(this)[0].id.split('_')[2];
+                var arr = [];
+                var arr2 = [];
+                arr.push(parseInt($("#lift1Number").val()));
+                arr2.push(parseInt($("#lift1Number").val()));
+                arr.push(parseInt($("#lift2Number").val()));
+                arr2.push(parseInt($("#lift2Number").val()));
+                arr.push(parseInt($("#lift3Number").val()));
+                arr2.push(parseInt($("#lift3Number").val()));
+
+                var nearestLif = findNearestLift(arr, arr2, flooor);
+                setLift('#lift' + nearestLif.toString(), flooor);
+            });
+
+            function findNearestLift(arr, mainArray, floor)
+            {
+                arr.sort((a, b) => {
+                    return Math.abs(floor - a) - Math.abs(floor - b);
+                })
+
+                return mainArray.indexOf(arr[0]) + 1;
+            }
+            
+            function setLift(lift, floor)
+            {
+                if(intervalName)
+                {
+                    clearInterval(intervalName);
+                }
+                var intervalName = lift.toString() + 'interval';
+                intervalName = setInterval(function() {
+                    var val = $(lift).slider("option", "value");
+                    if(parseInt(val) > parseInt(floor))
+                    {
+                        liftDown(lift, floor);
+                        var newVal = $(lift).slider("option", "value");
+                        if (parseInt(newVal) === parseInt(floor)) {
+                            clearInterval(intervalName);
+                        }
+                    }
+                    else
+                    {
+                        liftUp(lift, floor);
+                        var newVal = $(lift).slider("option", "value");
+                        if (parseInt(newVal) === parseInt(floor)) {
+                            clearInterval(intervalName);
+                        }
+                    }
+                    
+                }, 1000);
+            }
+
+            function liftUp(lift, floor) {
+                var val = $(lift).slider("option", "value");
+                
+                $(lift).slider('value', parseInt(val) + 1);  
+                $(lift).trigger('slide');
+                $(lift + "Number").val(parseInt(val) + 1);
+            }
+            function liftDown(lift, floor) {
+                var val = $(lift).slider("option", "value");
+                $(lift).slider('value', parseInt(val) - 1);  
+                $(lift).trigger('slide');
+                $(lift + "Number").val(parseInt(val) - 1);
+            }
+            Array.min = function( array ){
+                return Math.min.apply( Math, array );
+            };
+        });
+    </script>
+    <style>
+        #eq > span {
+            height:300px; float:left; margin:15px
+        }
+        tr.border-bottom td {
+            border-bottom: 1pt solid black;
+        }
+        #custom-handle1, #custom-handle2, #custom-handle3 {
+            width: 1.4em;
+            height: 1.6em;
+            /* top: 50%; */
+            /* margin-top: -.8em; */
+            text-align: center;
+            line-height: 1.6em;
+        }
+        input[name^='person']:after {
+            width: 15px;
+            height: 15px;
+            border-radius: 15px;
+            top: -2px;
+            left: -1px;
+            position: relative;
+            background-color: #d1d3d1;
+            content: '';
+            display: inline-block;
+            visibility: visible;
+            border: 2px solid white;
+        }
+        input[name^='person']:checked:after {
+            width: 15px;
+            height: 15px;
+            border-radius: 15px;
+            top: -2px;
+            left: -1px;
+            position: relative;
+            content: '';
+            display: inline-block;
+            visibility: visible;
+            border: 2px solid white;
+        }
+        input[name='person1']:checked:after {
+            background-color: #e6b800;
+        }
+        input[name='person2']:checked:after {
+            background-color: #ffe066;
+        }
+        input[name='person3']:checked:after {
+            background-color: #99b3ff;
+        }
+        input[name='person4']:checked:after {
+            background-color: #3939ac;
+        }
+        input[name='person5']:checked:after {
+            background-color: #00b300;
+        }
+        input[name='person6']:checked:after {
+            background-color: #ff704d;
+        }
+    </style>
+</head>
+<body>
+    <table>
+        <tbody>
+            <tr>
+                <td>
+                <table>
+                    <thead>
+                        <tr >
+                            <th>Lift 1</th>
+                            <th>Lift 2</th>
+                            <th>Lift 3</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="max-width: 60px;">
+                                <input type="text" id="lift1Number" readonly style="border:0; color:#f6931f; font-weight:bold;">
+                            </td>
+                            <td style="max-width: 60px;">
+                                <input type="text" id="lift2Number" readonly style="border:0; color:#f6931f; font-weight:bold;">
+                            </td>
+                            <td style="max-width: 60px;">
+                                <input type="text" id="lift3Number" readonly style="border:0; color:#f6931f; font-weight:bold;">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div id="lift1" style="height:500px;">
+                                    <span id="lift1Container" class="ui-slider-handle"></span>
+                                </div>
+                            </td>
+                            <td>
+                                <div id="lift2" style="height:500px;">
+                                    <span id="lift2Container" class="ui-slider-handle"></span>
+                                </div>
+                            </td>
+                            <td>
+                                <div id="lift3" style="height:500px;">
+                                    <span id="lift3Container" class="ui-slider-handle"></span>
+                                </div>
+                            </td>
+                        
+                        </tr> 
+                    </tbody>
+                </table>
+                </td>
+                <td>
+                <table id="tblPerson">
+                    <thead>
+                        <tr>
+                            <th>Person 1</th>
+                            <th>Person 2</th>
+                            <th>Person 3</th>
+                            <th>Person 4</th>
+                            <th>Person 5</th>
+                            <th>Person 6</th>
+                            <th>Floor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody> 
+                </table>
+                </td>
+            </tr>
+        </tbody>
+    </table> 
+</body>
+</html>
